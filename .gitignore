@@ -1,0 +1,28 @@
+# Personal notes, progress and exam prep (never public)
+notes/
+
+# Secrets and local config
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+*.publishsettings
+
+# Local parameter overrides (may hold real IDs)
+*.local.bicepparam
+*.local.json
+
+# State files
+*.tfstate
+*.tfstate.*
+
+# Python
+__pycache__/
+.venv/
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.idea/
