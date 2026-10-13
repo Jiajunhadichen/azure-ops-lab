@@ -81,17 +81,18 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy to the lab resource group
-        uses: azure/bicep-deploy@4dc076a544e5297d3aeb3cb972e7614e12f5a55b # v2.4.0
-        with:
-          type: deployment
-          operation: create
-          scope: resourceGroup
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          resource-group-name: ${{ env.RESOURCE_GROUP }}
-          name: deploy-${{ github.run_id }}
-          template-file: infra/main.bicep
-          bicep-version: ${{ env.BICEP_VERSION }}
-          parameters: >-
-            {"adminSourceIp": "${{ secrets.ADMIN_SOURCE_IP }}",
-             "sshPublicKey": "${{ vars.SSH_PUBLIC_KEY }}",
-             "owner": "hadi", "expires": "2026-12-31"}
+        shell: bash
+        env:
+          ADMIN_SOURCE_IP: ${{ secrets.ADMIN_SOURCE_IP }}
+          SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
+        run: |
+          az bicep install --version "v${BICEP_VERSION}"
+          start=$(date +%s)
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "deploy-${{ github.run_id }}" \
+            --template-file infra/main.bicep \
+            --parameters adminSourceIp="$ADMIN_SOURCE_IP" sshPublicKey="$SSH_PUBLIC_KEY" \
+                         owner=hadi expires=2026-12-31 \
+            --query "properties.provisioningState" -o tsv
+          echo "Deploy duration: $(( $(date +%s) - start )) s" | tee -a "$GITHUB_STEP_SUMMARY"
