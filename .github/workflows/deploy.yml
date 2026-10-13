@@ -41,20 +41,28 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: What-if against the lab resource group
-        uses: azure/bicep-deploy@4dc076a544e5297d3aeb3cb972e7614e12f5a55b # v2.4.0
-        with:
-          type: deployment
-          operation: whatIf
-          scope: resourceGroup
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          resource-group-name: ${{ env.RESOURCE_GROUP }}
-          name: whatif-${{ github.run_id }}
-          template-file: infra/main.bicep
-          bicep-version: ${{ env.BICEP_VERSION }}
-          parameters: >-
-            {"adminSourceIp": "${{ secrets.ADMIN_SOURCE_IP }}",
-             "sshPublicKey": "${{ vars.SSH_PUBLIC_KEY }}",
-             "owner": "hadi", "expires": "2026-12-31"}
+        # Azure CLI instead of azure/bicep-deploy: the action reported "no change"
+        # when ARM preflight failed (VM quota 0), while the CLI fails the job.
+        shell: bash # -eo pipefail, so a failed what-if is not hidden by tee
+        env:
+          ADMIN_SOURCE_IP: ${{ secrets.ADMIN_SOURCE_IP }}
+          SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
+        run: |
+          az bicep install --version "v${BICEP_VERSION}"
+          az deployment group what-if \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "whatif-${{ github.run_id }}" \
+            --template-file infra/main.bicep \
+            --parameters adminSourceIp="$ADMIN_SOURCE_IP" sshPublicKey="$SSH_PUBLIC_KEY" \
+                         owner=hadi expires=2026-12-31 \
+            --result-format FullResourcePayloads \
+            | tee whatif.txt
+          {
+            echo '## What-if'
+            echo '```'
+            grep -E '^ *[-+~=*!x] Microsoft\.|Resource changes' whatif.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     name: Deploy
