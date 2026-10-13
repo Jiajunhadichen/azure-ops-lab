@@ -10,7 +10,7 @@ A small Azure environment that I build as code, monitor, break on purpose, and r
 | Deploy from scratch | __ min |
 | Median time to detect a failure (2 alert strategies, 9 drills) | __ min |
 | Restore after failure | __ min |
-| Monthly lab cost | __ SEK (target: under 300 SEK) |
+| Monthly lab cost | __ SEK (target: under 500 SEK, excl. VAT) |
 
 Numbers stay as `__` until I have measured them myself.
 

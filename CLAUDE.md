@@ -22,7 +22,7 @@
 - Never ask for, print or store passwords, tokens or keys. Logins (az login, gh auth) are done by the owner.
 - Never commit .env, *.pem, state files, or subscription/tenant IDs (use placeholders). Redact IDs, emails, IPs and tenant names from evidence. Run gitleaks before every push.
 - Azure: autonomous changes only inside the approved lab subscription and resource group, after the one-time setup (subscription check, resource group in Sweden Central, budget with email alerts, pricing check, naming/tags/cleanup policy, least-privilege identity). Until that setup is approved, every Azure create/modify/delete needs the owner's explicit ok.
-- Budget target: 300 SEK per month. Any change whose projected monthly total exceeds it needs the owner's approval. A silent budget alert does not mean costs are safe. After each lab, check for leftover disks, public IPs, snapshots and backup storage.
+- Budget target: 500 SEK per month (Cost Management amount, excluding VAT; budget `budget-sub-monthly` on the subscription). Any change whose projected monthly total exceeds it needs the owner's approval. A silent budget alert does not mean costs are safe. After each lab, check for leftover disks, public IPs, snapshots and backup storage.
 - Never deploy Azure Firewall, AKS, VPN Gateway, Bastion Standard, Sentinel, Defender or Site Recovery without separate approval. Never change billing, payment methods, subscription ownership or cost alerts.
 - Repository deletion: only after a full mirror backup in ~/github-archive/ is verified readable, and never for repos with unique lab results or important history.
 - Disclose AI assistance in the README, accurately describing what Claude was allowed to do.
