@@ -48,6 +48,11 @@ var vms = [
   { purpose: 'app', allowHttp: false }
 ]
 
+// IDs built from known names instead of module outputs, so what-if can preview the VM modules too.
+var subnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet-${workload}-${regionCode}', 'snet-vms')
+var asgSshId = resourceId('Microsoft.Network/applicationSecurityGroups', 'asg-${workload}-ssh-${regionCode}')
+var asgWebId = resourceId('Microsoft.Network/applicationSecurityGroups', 'asg-${workload}-web-${regionCode}')
+
 module network 'modules/network.bicep' = {
   name: 'network'
   params: {
@@ -63,11 +68,12 @@ module network 'modules/network.bicep' = {
 module vm 'modules/vm.bicep' = [
   for v in vms: {
     name: 'vm-${v.purpose}'
+    dependsOn: [network]
     params: {
       location: location
       name: 'vm-${workload}-${v.purpose}-${regionCode}'
-      subnetId: network.outputs.subnetId
-      asgIds: v.allowHttp ? [network.outputs.asgSshId, network.outputs.asgWebId] : [network.outputs.asgSshId]
+      subnetId: subnetId
+      asgIds: v.allowHttp ? [asgSshId, asgWebId] : [asgSshId]
       withPublicIp: !useNatGateway
       vmSize: vmSize
       adminUsername: adminUsername
