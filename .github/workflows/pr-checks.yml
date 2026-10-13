@@ -1,0 +1,58 @@
+# Runs on every pull request to main and on every push to main.
+# Two checks: no secrets in the full git history, and every Bicep file builds and lints cleanly.
+name: pr-checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      # SHA-256 of gitleaks_8.30.1_linux_x64.tar.gz from the official release checksums file
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, so old commits are scanned too
+
+      - name: Install gitleaks (pinned version, checksum verified)
+        run: |
+          file="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$file" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${file}"
+          echo "${GITLEAKS_SHA256}  ${file}" | sha256sum --check -
+          tar -xzf "$file" gitleaks
+          sudo mv gitleaks /usr/local/bin/
+
+      - name: Scan full history
+        run: gitleaks git . --redact --verbose --exit-code 1
+
+  bicep:
+    name: Bicep build and lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and lint every .bicep file
+        run: |
+          shopt -s globstar nullglob
+          files=(infra/**/*.bicep)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No Bicep files yet, nothing to check."
+            exit 0
+          fi
+          az bicep install
+          for f in "${files[@]}"; do
+            echo "::group::$f"
+            az bicep lint --file "$f"
+            az bicep build --file "$f" --stdout > /dev/null
+            echo "::endgroup::"
+          done
