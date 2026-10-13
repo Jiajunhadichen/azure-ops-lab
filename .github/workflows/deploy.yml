@@ -1,0 +1,89 @@
+# Preview (what-if) every infra change on PRs; deploy only by hand from main.
+# Logs in with OIDC through the user-assigned identity id-azopslab-github: no stored passwords.
+name: deploy
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ["infra/**", ".github/workflows/deploy.yml"]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "what-if only, or deploy after what-if"
+        type: choice
+        options: [what-if, deploy]
+        default: what-if
+
+permissions:
+  contents: read
+  id-token: write # needed to request the OIDC token for azure/login
+
+concurrency:
+  group: deploy-rg-azopslab-swc
+  cancel-in-progress: false # never cut a running deployment short
+
+env:
+  RESOURCE_GROUP: rg-azopslab-swc
+  BICEP_VERSION: 0.48.1
+
+jobs:
+  what-if:
+    name: What-if
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Azure login (OIDC)
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: What-if against the lab resource group
+        uses: azure/bicep-deploy@4dc076a544e5297d3aeb3cb972e7614e12f5a55b # v2.4.0
+        with:
+          type: deployment
+          operation: whatIf
+          scope: resourceGroup
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          resource-group-name: ${{ env.RESOURCE_GROUP }}
+          name: whatif-${{ github.run_id }}
+          template-file: infra/main.bicep
+          bicep-version: ${{ env.BICEP_VERSION }}
+          parameters: >-
+            {"adminSourceIp": "${{ secrets.ADMIN_SOURCE_IP }}",
+             "sshPublicKey": "${{ vars.SSH_PUBLIC_KEY }}",
+             "owner": "hadi", "expires": "2026-12-31"}
+
+  deploy:
+    name: Deploy
+    needs: what-if
+    # Manual run, from main, with mode=deploy. PRs can never deploy.
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'deploy' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Azure login (OIDC)
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to the lab resource group
+        uses: azure/bicep-deploy@4dc076a544e5297d3aeb3cb972e7614e12f5a55b # v2.4.0
+        with:
+          type: deployment
+          operation: create
+          scope: resourceGroup
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          resource-group-name: ${{ env.RESOURCE_GROUP }}
+          name: deploy-${{ github.run_id }}
+          template-file: infra/main.bicep
+          bicep-version: ${{ env.BICEP_VERSION }}
+          parameters: >-
+            {"adminSourceIp": "${{ secrets.ADMIN_SOURCE_IP }}",
+             "sshPublicKey": "${{ vars.SSH_PUBLIC_KEY }}",
+             "owner": "hadi", "expires": "2026-12-31"}
