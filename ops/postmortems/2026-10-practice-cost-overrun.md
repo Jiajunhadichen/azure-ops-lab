@@ -30,8 +30,9 @@ After I explained that this was exam practice, Microsoft Billing Support approve
 - 2026-10-11: invoice arrives; I notice the cost.
 - 2026-10-11: stopped all VMs, deleted the resource groups with Azure CLI, then removed the remaining resources.
 - 2026-10-11 onwards: contacted Microsoft Billing Support; credit approved.
-- 2026-10-13: read-only check shows 0 resource groups and 0 resources; no cost recorded after 2026-10-11 so far (to be re-checked after the 24–48 h cost data delay).
+- 2026-10-13: read-only check shows 0 resource groups and 0 resources.
 - 2026-10-13: subscription budget with email alerts created.
+- 2026-10-14: daily cost re-checked after the 24–48 h data delay: last charge on 2026-10-11 (about 104 SEK, partial day), nothing from 2026-10-12 on.
 
 ## Root causes
 1. No budget or cost alert on the subscription, so the first signal was the invoice, weeks later.
