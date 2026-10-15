@@ -1,7 +1,7 @@
 # Lab monitor-01: Email alert on new role assignments
 
 - Date: 2026-10-15
-- Status: In progress (tested and cleaned up; action group overview screenshot pending)
+- Status: Done
 - AZ-104 skill: Monitor resources in Azure: configure alert rules, action groups and alert processing rules
 - Azure services: Azure Monitor (activity log alert, action group)
 
@@ -38,6 +38,7 @@ Bicep monitoring module so the repo and Azure do not drift.
 Detection to inbox: about 3 minutes.
 
 Evidence (subscription ID, emails and tenant name masked):
+- [Action group overview](../../evidence/monitor-01/2026-10-15-action-group-overview.png) (email receiver verified)
 - [Alert rule condition](../../evidence/monitor-01/2026-10-15-alert-rule-condition.png)
 - [Alert rule overview](../../evidence/monitor-01/2026-10-15-alert-rule-overview.png)
 - [Fired alerts](../../evidence/monitor-01/2026-10-15-fired-alerts.png)
