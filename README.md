@@ -19,7 +19,7 @@ Numbers stay as `__` until I have measured them myself.
 | Stage | What it proves | Status |
 |---|---|---|
 | **Build** | One command creates the network and two Linux VMs from Bicep; one command deletes everything. | Templates written, not yet deployed |
-| **Monitor** | Metrics and logs land in Log Analytics; alerts reach me by email. | Planned |
+| **Monitor** | Metrics and logs land in Log Analytics; alerts reach me by email. | First alert tested: role-assignment change to inbox in ~3 min ([monitor-01](labs/monitor-01-activity-log-alert/)). VM metrics and logs not started |
 | **Break** | Scripted failure drills (stopped service, blocked port, full disk) with measured detection time. | Planned |
 | **Recover** | Runbooks and backup restores, timed, with a short postmortem for each drill. | Planned |
 
