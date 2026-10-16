@@ -26,7 +26,7 @@ var tags = {
   env: 'lab'
   project: 'azure-ops-lab'
   expires: expires
-  keepalive: string(keepalive)
+  keepalive: keepalive ? 'true' : 'false' // not string(): ARM turns a bool into 'True'/'False'
 }
 
 // Action groups and activity log alerts are global resources.

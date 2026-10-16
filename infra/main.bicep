@@ -39,7 +39,7 @@ var tags = {
   env: 'lab'
   project: 'azure-ops-lab'
   expires: expires
-  keepalive: string(keepalive)
+  keepalive: keepalive ? 'true' : 'false' // not string(): ARM turns a bool into 'True'/'False'
 }
 
 // The two VMs differ only in purpose and whether HTTP is allowed in.
