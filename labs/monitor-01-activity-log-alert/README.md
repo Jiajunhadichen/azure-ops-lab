@@ -91,8 +91,40 @@ Evidence:
 
 ## Cleanup and cost
 - Test Reader assignments (2026-10-15 and 2026-10-16): removed. Remaining assignments: inherited
-  subscription Owner (two rows, see [#17](https://github.com/Jiajunhadichen/azure-ops-lab/issues/17))
-  and the deploy identity's Contributor on the resource group.
+  subscription Owner (one row since 2026-10-16, see below) and the deploy identity's Contributor on
+  the resource group.
 - Kept: the action group and the alert rule, as the lab's baseline alerting.
 - Cost: not measured; expected 0 (activity log alerts are free and the email count is far below the
   monthly free allowance).
+
+### Follow-up: duplicate subscription Owner (2026-10-16)
+The cleanup check showed the owner's account twice as Owner. `az role assignment list` showed two
+separate assignments with the same principal, role (Owner) and scope (subscription), no condition,
+both created by the platform at sign-up (2026-07-04 11:29:06 UTC, 79 ms apart, no creator recorded).
+Access was identical with one or two; the newer one was removed to keep access reviews clean.
+
+The Portal shows the two rows as identical, so the removal was done in the CLI, picking the newer
+assignment by creation time and deleting it by ID only (deleting by assignee, role and scope could
+match both and leave the subscription without an Owner):
+
+Commands as run (zsh on macOS):
+
+```bash
+SUB="/subscriptions/$(az account show --query id -o tsv)"
+N=$(az role assignment list --role Owner --include-inherited --scope "$SUB" --query "length(@)" -o tsv)
+KEEP=$(az role assignment list --role Owner --include-inherited --scope "$SUB" --query "sort_by(@, &createdOn)[0].id" -o tsv)
+DUP=$(az role assignment list --role Owner --include-inherited --scope "$SUB" --query "sort_by(@, &createdOn)[-1].id" -o tsv)
+echo "count:  $N"; echo "keep:   ${KEEP##*/}"; echo "delete: ${DUP##*/}"
+if [ "$N" = "2" ] && [ -n "$DUP" ] && [ "$DUP" != "$KEEP" ]; then
+  az role assignment delete --ids "$DUP"
+else
+  echo "STOP: not exactly 2 different Owner assignments, nothing deleted"
+fi
+az role assignment list --role Owner --include-inherited --scope "$SUB" \
+  --query "[].{created:createdOn, isKeep:id=='$KEEP'}" -o table
+```
+
+Result: one Owner assignment left, the older one (`isKeep = True`); the Portal shows one Owner row.
+Tracked in [#17](https://github.com/Jiajunhadichen/azure-ops-lab/issues/17).
+- [Terminal: before, selection, guarded delete, after](../../evidence/monitor-01/2026-10-16-owner-duplicate-removal.png)
+- [Portal: one Owner assignment left](../../evidence/monitor-01/2026-10-16-owner-after-removal.png)
