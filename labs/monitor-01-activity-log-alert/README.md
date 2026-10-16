@@ -11,8 +11,8 @@ access is a real security event, and this alert can be tested before any VM exis
 blocked on quota).
 
 ## What I did
-Built by hand in the Azure Portal, to learn the moving parts. The action group will move into the
-Bicep monitoring module so the repo and Azure do not drift.
+Built by hand in the Azure Portal, to learn the moving parts. On 2026-10-16 the action group and the
+rule moved into Bicep so the repo and Azure do not drift (see Moved to Bicep below).
 
 1. Action group in `rg-azopslab-swc` (intended name `ag-azopslab-email`, see What went wrong):
    region Global, display name `azopslab`,
@@ -67,16 +67,73 @@ Evidence:
 - [Alert email](../../evidence/monitor-01/2026-10-16-retest-alert-email.png)
 - [Role assignments after cleanup](../../evidence/monitor-01/2026-10-16-retest-reader-removed.png)
 
+### Moved to Bicep (2026-10-16)
+The action group and the rule now come from [`infra/monitoring.bicep`](../../infra/monitoring.bicep),
+deployed from the owner's Mac. The email address is read from the `ALERT_EMAIL` environment
+variable, so it is not in git.
+
+Commands as run (zsh on macOS):
+
+```bash
+export ALERT_EMAIL=<owner email>
+az deployment group what-if -g rg-azopslab-swc -p infra/monitoring.bicepparam
+az deployment group create -g rg-azopslab-swc -p infra/monitoring.bicepparam \
+  --name monitoring-baseline-20261016 -o table
+az deployment group what-if -g rg-azopslab-swc -p infra/monitoring.bicepparam   # drift check
+```
+
+| Step | Result |
+|---|---|
+| What-if 1 | 1 to create (new action group), 1 to modify (rule). One line showed the `keepalive` tag as `"False"` instead of `"false"`: a template bug, fixed before deploying ([#22](https://github.com/Jiajunhadichen/azure-ops-lab/issues/22)) |
+| What-if 2 | Same counts. Rule: action group → `ag-azopslab-email`; status filter `containsAny ["succeeded"]` → `equals "Succeeded"` (the Portal and Bicep forms of the same filter); tags unchanged |
+| Deploy | `monitoring-baseline-20261016` Succeeded at 08:25 UTC, Incremental mode (resources not in the template, such as the old action group, are left alone) |
+| Email receiver | "You've been added to an Azure Monitor action group" email; no verification code this time (the Portal-built group asked for one; reason not verified) |
+| What-if 3, drift check | `2 no change, 2 to ignore`: Azure matches the template |
+
+Re-test through the new action group, Reader assignment created in the CLI:
+
+| Event | Time (UTC) |
+|---|---|
+| Reader assignment created | 08:32:24 |
+| Alert fired, email received | 08:37 (fired 08:37:18) |
+| Test Reader assignment removed (by its ID) | ~09:03 |
+
+Result: the alert email arrived through `ag-azopslab-email`. Detection to inbox: about 5 minutes
+(third sample).
+
+After the re-test the old action group was deleted, behind a guard that first counts rules still
+using it (its name is the only one with `;`):
+
+```bash
+REFS=$(az monitor activity-log alert list -g rg-azopslab-swc --query "length([?actions.actionGroups[?contains(actionGroupId, ';')]])" -o tsv)
+echo "rules using old group: $REFS"
+if [ "$REFS" = "0" ]; then az monitor action-group delete -g rg-azopslab-swc -n 'ag-azops;ab-email'; else echo "STOP: still in use, nothing deleted"; fi
+az monitor action-group list -g rg-azopslab-swc --query "[].name" -o tsv
+```
+
+Result: `rules using old group: 0`; `ag-azopslab-email` is the only action group left.
+
+Evidence (subscription ID and email masked, role assignment IDs shortened):
+- [What-if 1: keepalive bug](../../evidence/monitor-01/2026-10-16-whatif-1-keepalive-bug.png)
+- [What-if 2: fixed](../../evidence/monitor-01/2026-10-16-whatif-2-fixed.png)
+- [Deploy succeeded](../../evidence/monitor-01/2026-10-16-deploy-succeeded.png)
+- [Added to action group email](../../evidence/monitor-01/2026-10-16-added-to-action-group-email.png)
+- [What-if 3: drift check](../../evidence/monitor-01/2026-10-16-whatif-3-drift-check.png)
+- [Re-test: Reader created](../../evidence/monitor-01/2026-10-16-retest-2-reader-added.png)
+- [Re-test: alert email](../../evidence/monitor-01/2026-10-16-retest-2-alert-email.png)
+- [Re-test: Reader removed, none left](../../evidence/monitor-01/2026-10-16-retest-2-reader-removed.png)
+- [Old action group deleted](../../evidence/monitor-01/2026-10-16-old-action-group-deleted.png)
+
 ## What went wrong
 - One role assignment fired **two** alerts. Confirmed cause: one operation writes two activity log
   events (same operation ID, status Started, then Succeeded) and the rule accepted all statuses.
   Fixed 2026-10-16 by filtering on status Succeeded; re-test gave one alert and one email (above).
-  The Bicep monitoring module in [#19](https://github.com/Jiajunhadichen/azure-ops-lab/pull/19)
-  (not deployed yet) sets the same filter. Tracked in [#15](https://github.com/Jiajunhadichen/azure-ops-lab/issues/15).
+  The Bicep monitoring module ([#19](https://github.com/Jiajunhadichen/azure-ops-lab/pull/19),
+  deployed 2026-10-16) sets the same filter. Tracked in [#15](https://github.com/Jiajunhadichen/azure-ops-lab/issues/15).
 - Typo in the action group name: it was created as `ag-azops;ab-email` (semicolon instead of `l`).
-  Azure resource names cannot be changed after creation. It works, so it stays for now; the Bicep
-  monitoring module will create `ag-azopslab-email`, the rule will point to it, and the typo group
-  will be deleted. Lesson: names typed by hand drift; names in code do not. Tracked in [#16](https://github.com/Jiajunhadichen/azure-ops-lab/issues/16).
+  Azure resource names cannot be changed after creation. Fixed 2026-10-16: Bicep created
+  `ag-azopslab-email`, the rule now points to it, and the typo group was deleted (see Moved to Bicep).
+  Lesson: names typed by hand drift; names in code do not. Tracked in [#16](https://github.com/Jiajunhadichen/azure-ops-lab/issues/16).
 - The Monitor > Alerts page looked empty after creating the rule. It lists fired alerts, not rules;
   rules live under Alert rules.
 - Open question: on 2026-10-16 the subscription Activity log view (last 24 hours) showed the
@@ -90,10 +147,11 @@ Evidence:
 - Resource group scope, not subscription: matches the lab boundary.
 
 ## Cleanup and cost
-- Test Reader assignments (2026-10-15 and 2026-10-16): removed. Remaining assignments: inherited
+- Test Reader assignments (one on 2026-10-15, two on 2026-10-16): removed. Remaining assignments: inherited
   subscription Owner (one row since 2026-10-16, see below) and the deploy identity's Contributor on
   the resource group.
-- Kept: the action group and the alert rule, as the lab's baseline alerting.
+- Kept: `ag-azopslab-email` and `ar-azopslab-rbac-change` (managed by Bicep since 2026-10-16), as
+  the lab's baseline alerting. Deleted: the hand-built `ag-azops;ab-email`.
 - Cost: not measured; expected 0 (activity log alerts are free and the email count is far below the
   monthly free allowance).
 

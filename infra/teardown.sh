@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Delete every lab resource in the resource group, keep the group and the deploy identity,
+# Delete every lab resource in the resource group, keep the group, the deploy identity and the
+# free alerting baseline (infra/monitoring.bicep),
 # then check the whole subscription for billable leftovers (disks, public IPs, snapshots).
 #
 # Usage: infra/teardown.sh          # dry run: list what would be deleted
@@ -9,7 +10,11 @@
 set -euo pipefail
 
 RG="${RG:-rg-azopslab-swc}"
-KEEP_TYPE="Microsoft.ManagedIdentity/userAssignedIdentities"
+# Kept on teardown (free). Matched case-insensitively: az returns resource types in mixed case.
+KEEP_RE="microsoft.managedidentity/userassignedidentities|microsoft.insights/actiongroups|microsoft.insights/activitylogalerts"
+not_kept() { # stdin: lines starting with a resource type; prints the lines that are not kept
+  grep -viE "^(${KEEP_RE})([[:space:]]|$)" || true
+}
 APPLY=false
 CHECK_ONLY=false
 [[ "${1:-}" == "--yes" ]] && APPLY=true
@@ -43,8 +48,9 @@ for type in "${ORDER[@]}"; do
   fi
 done
 
-# Anything else in the group that is not the deploy identity.
-others=$(az resource list -g "$RG" --query "[?type!='$KEEP_TYPE'].[type, name]" -o tsv)
+# Anything else in the group that is not kept.
+all=$(az resource list -g "$RG" --query "[].[type, name]" -o tsv)
+others=$(printf '%s' "$all" | not_kept)
 if [[ -n "$others" ]]; then
   echo "Not in the delete order (handle by hand):"
   echo "$others" | sed 's/^/  /'
@@ -61,7 +67,8 @@ check() { # $1 = label, $2 = az query returning a count
   printf '  %-36s %s\n' "$1" "$n"
   [[ "$n" == "0" ]] || left=1
 }
-check "resources in $RG (not identity)" "az resource list -g '$RG' --query \"length([?type!='$KEEP_TYPE'])\" -o tsv"
+rg_types=$(az resource list -g "$RG" --query "[].type" -o tsv)
+check "resources in $RG (not kept)" "printf '%s' \"\$rg_types\" | not_kept | grep -c . || true"
 # az disk list needs -g in current CLI versions, so ask the API for the whole subscription.
 check "unattached managed disks" "az rest --method get --url '/subscriptions/{subscriptionId}/providers/Microsoft.Compute/disks?api-version=2024-03-02' --query \"length(value[?properties.diskState=='Unattached'])\" -o tsv"
 check "unassociated public IPs" "az network public-ip list --query 'length([?ipConfiguration==null && natGateway==null])' -o tsv"

@@ -19,7 +19,7 @@ Numbers stay as `__` until I have measured them myself.
 | Stage | What it proves | Status |
 |---|---|---|
 | **Build** | One command creates the network and two Linux VMs from Bicep; one command deletes everything. | Templates written, not yet deployed |
-| **Monitor** | Metrics and logs land in Log Analytics; alerts reach me by email. | First alert tested: role-assignment change to inbox in ~3 min ([monitor-01](labs/monitor-01-activity-log-alert/)). VM metrics and logs not started |
+| **Monitor** | Metrics and logs land in Log Analytics; alerts reach me by email. | First alert, deployed from Bicep: role-assignment change to inbox in 3 to 6 min over three tests ([monitor-01](labs/monitor-01-activity-log-alert/)). VM metrics and logs not started |
 | **Break** | Scripted failure drills (stopped service, blocked port, full disk) with measured detection time. | Planned |
 | **Recover** | Runbooks and backup restores, timed, with a short postmortem for each drill. | Planned |
 
@@ -43,7 +43,7 @@ Numbers stay as `__` until I have measured them myself.
 
 | Path | Contents |
 |---|---|
-| [`infra/`](infra/) | Bicep templates (`main.bicep`, modules, example parameters) |
+| [`infra/`](infra/) | Bicep templates (`main.bicep`, `monitoring.bicep`, modules, parameters) |
 | [`ops/`](ops/) | Alerts, KQL queries, runbooks, postmortems |
 | [`drills/`](drills/) | Failure drill scripts, raw data and analysis |
 | [`evidence/`](evidence/) | Redacted output and screenshots from real runs |
