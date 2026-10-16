@@ -37,6 +37,7 @@ Numbers stay as `__` until I have measured them myself.
 - CI on every PR: full-history secret scan (pinned, checksum-verified gitleaks) and Bicep build and lint ([workflow](.github/workflows/pr-checks.yml)).
 - Infrastructure changes are previewed with `what-if` before they are applied.
 - Design decisions are recorded as ADRs in [`docs/adr/`](docs/adr/).
+- Mistakes and surprises from labs are tracked as [`lab-finding` issues](https://github.com/Jiajunhadichen/azure-ops-lab/issues?q=label%3Alab-finding): what happened, root cause, fix and lesson, closed by the PR that fixes them. Larger incidents get a postmortem in [`ops/postmortems/`](ops/postmortems/).
 
 ## Repository map
 

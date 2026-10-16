@@ -48,11 +48,11 @@ Evidence (subscription ID, emails and tenant name masked):
 ## What went wrong
 - One role assignment fired **two** alerts. Likely cause: the write is logged twice (status Started,
   then Succeeded) and the rule accepts all statuses. Not yet confirmed. Tuning idea: filter on
-  status Succeeded to get one email per change.
+  status Succeeded to get one email per change. Tracked in [#15](https://github.com/Jiajunhadichen/azure-ops-lab/issues/15).
 - Typo in the action group name: it was created as `ag-azops;ab-email` (semicolon instead of `l`).
   Azure resource names cannot be changed after creation. It works, so it stays for now; the Bicep
   monitoring module will create `ag-azopslab-email`, the rule will point to it, and the typo group
-  will be deleted. Lesson: names typed by hand drift; names in code do not.
+  will be deleted. Lesson: names typed by hand drift; names in code do not. Tracked in [#16](https://github.com/Jiajunhadichen/azure-ops-lab/issues/16).
 - The Monitor > Alerts page looked empty after creating the rule. It lists fired alerts, not rules;
   rules live under Alert rules.
 

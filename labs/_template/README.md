@@ -15,7 +15,7 @@ The commands I actually ran, in order, with IDs redacted.
 Real output or screenshots (stored in evidence/<lab>/) that prove it worked.
 
 ## What went wrong
-Errors I hit and how I fixed them.
+Errors I hit and how I fixed them. Anything not fixed in this lab gets a `lab-finding` issue; link it here.
 
 ## Decisions
 Why I chose this option over the alternatives.
