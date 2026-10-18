@@ -44,8 +44,8 @@ Numbers stay as `__` until I have measured them myself.
 | Path | Contents |
 |---|---|
 | [`infra/`](infra/) | Bicep templates (`main.bicep`, `monitoring.bicep`, modules, parameters) |
-| [`ops/`](ops/) | Alerts, KQL queries, runbooks, postmortems |
-| [`drills/`](drills/) | Failure drill scripts, raw data and analysis |
+| [`ops/`](ops/) | Postmortems now; KQL queries and runbooks to come (alert rules live in `infra/monitoring.bicep`) |
+| [`drills/`](drills/) | Failure drill scripts, raw data and analysis (empty until the first drill) |
 | [`evidence/`](evidence/) | Redacted output and screenshots from real runs |
 | [`labs/`](labs/) | AZ-104 practice notes, one folder per lab |
 | [`docs/adr/`](docs/adr/) | Architecture decision records |
