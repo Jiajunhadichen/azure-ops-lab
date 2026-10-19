@@ -1,0 +1,296 @@
+# Redacted: subscription ID and the owner's public IP. Copied from the owner's terminal, 2026-10-19 ~19:34 UTC.
+az deployment group what-if -g rg-azopslab-swc -p infra/main.local.bicepparam
+Note: The result may contain false positive predictions (noise).
+You can help us improve the accuracy of the result by opening an issue here: https://aka.ms/WhatIfIssues
+
+Resource and property changes are indicated with these symbols:
+  + Create
+  * Ignore
+
+The deployment will update the following scope:
+
+Scope: /subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc
+
+  + Microsoft.Compute/virtualMachines/vm-azopslab-app-swc [2024-07-01]
+
+      apiVersion:                                                            "2024-07-01"
+      id:                                                                    "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Compute/virtualMachines/vm-azopslab-app-swc"
+      location:                                                              "swedencentral"
+      name:                                                                  "vm-azopslab-app-swc"
+      properties.diagnosticsProfile.bootDiagnostics.enabled:                 true
+      properties.hardwareProfile.vmSize:                                     "Standard_D2als_v6"
+      properties.networkProfile.networkInterfaces: [
+        0:
+
+          id:                      "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/networkInterfaces/nic-vm-azopslab-app-swc"
+          properties.deleteOption: "Delete"
+
+      ]
+      properties.osProfile.adminUsername:                                    "azureops"
+      properties.osProfile.computerName:                                     "vm-azopslab-app-swc"
+      properties.osProfile.linuxConfiguration.disablePasswordAuthentication: true
+      properties.osProfile.linuxConfiguration.ssh.publicKeys: [
+        0:
+
+          keyData: "*******"
+          path:    "*******"
+
+      ]
+      properties.securityProfile.securityType:                               "TrustedLaunch"
+      properties.securityProfile.uefiSettings.secureBootEnabled:             true
+      properties.securityProfile.uefiSettings.vTpmEnabled:                   true
+      properties.storageProfile.diskControllerType:                          "NVMe"
+      properties.storageProfile.imageReference.offer:                        "ubuntu-24_04-lts"
+      properties.storageProfile.imageReference.publisher:                    "Canonical"
+      properties.storageProfile.imageReference.sku:                          "server"
+      properties.storageProfile.imageReference.version:                      "latest"
+      properties.storageProfile.osDisk.createOption:                         "FromImage"
+      properties.storageProfile.osDisk.deleteOption:                         "Delete"
+      properties.storageProfile.osDisk.diskSizeGB:                           32
+      properties.storageProfile.osDisk.name:                                 "osdisk-vm-azopslab-app-swc"
+      tags.env:                                                              "lab"
+      tags.expires:                                                          "2026-12-06"
+      tags.keepalive:                                                        "false"
+      tags.owner:                                                            "hadi"
+      tags.project:                                                          "azure-ops-lab"
+      type:                                                                  "Microsoft.Compute/virtualMachines"
+
+  + Microsoft.Compute/virtualMachines/vm-azopslab-web-swc [2024-07-01]
+
+      apiVersion:                                                            "2024-07-01"
+      id:                                                                    "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Compute/virtualMachines/vm-azopslab-web-swc"
+      location:                                                              "swedencentral"
+      name:                                                                  "vm-azopslab-web-swc"
+      properties.diagnosticsProfile.bootDiagnostics.enabled:                 true
+      properties.hardwareProfile.vmSize:                                     "Standard_D2als_v6"
+      properties.networkProfile.networkInterfaces: [
+        0:
+
+          id:                      "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/networkInterfaces/nic-vm-azopslab-web-swc"
+          properties.deleteOption: "Delete"
+
+      ]
+      properties.osProfile.adminUsername:                                    "azureops"
+      properties.osProfile.computerName:                                     "vm-azopslab-web-swc"
+      properties.osProfile.linuxConfiguration.disablePasswordAuthentication: true
+      properties.osProfile.linuxConfiguration.ssh.publicKeys: [
+        0:
+
+          keyData: "*******"
+          path:    "*******"
+
+      ]
+      properties.securityProfile.securityType:                               "TrustedLaunch"
+      properties.securityProfile.uefiSettings.secureBootEnabled:             true
+      properties.securityProfile.uefiSettings.vTpmEnabled:                   true
+      properties.storageProfile.diskControllerType:                          "NVMe"
+      properties.storageProfile.imageReference.offer:                        "ubuntu-24_04-lts"
+      properties.storageProfile.imageReference.publisher:                    "Canonical"
+      properties.storageProfile.imageReference.sku:                          "server"
+      properties.storageProfile.imageReference.version:                      "latest"
+      properties.storageProfile.osDisk.createOption:                         "FromImage"
+      properties.storageProfile.osDisk.deleteOption:                         "Delete"
+      properties.storageProfile.osDisk.diskSizeGB:                           32
+      properties.storageProfile.osDisk.name:                                 "osdisk-vm-azopslab-web-swc"
+      tags.env:                                                              "lab"
+      tags.expires:                                                          "2026-12-06"
+      tags.keepalive:                                                        "false"
+      tags.owner:                                                            "hadi"
+      tags.project:                                                          "azure-ops-lab"
+      type:                                                                  "Microsoft.Compute/virtualMachines"
+
+  + Microsoft.Network/applicationSecurityGroups/asg-azopslab-ssh-swc [2024-05-01]
+
+      apiVersion:     "2024-05-01"
+      id:             "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/applicationSecurityGroups/asg-azopslab-ssh-swc"
+      location:       "swedencentral"
+      name:           "asg-azopslab-ssh-swc"
+      tags.env:       "lab"
+      tags.expires:   "2026-12-06"
+      tags.keepalive: "false"
+      tags.owner:     "hadi"
+      tags.project:   "azure-ops-lab"
+      type:           "Microsoft.Network/applicationSecurityGroups"
+
+  + Microsoft.Network/applicationSecurityGroups/asg-azopslab-web-swc [2024-05-01]
+
+      apiVersion:     "2024-05-01"
+      id:             "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/applicationSecurityGroups/asg-azopslab-web-swc"
+      location:       "swedencentral"
+      name:           "asg-azopslab-web-swc"
+      tags.env:       "lab"
+      tags.expires:   "2026-12-06"
+      tags.keepalive: "false"
+      tags.owner:     "hadi"
+      tags.project:   "azure-ops-lab"
+      type:           "Microsoft.Network/applicationSecurityGroups"
+
+  + Microsoft.Network/networkInterfaces/nic-vm-azopslab-app-swc [2024-05-01]
+
+      apiVersion:     "2024-05-01"
+      id:             "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/networkInterfaces/nic-vm-azopslab-app-swc"
+      location:       "swedencentral"
+      name:           "nic-vm-azopslab-app-swc"
+      properties.ipConfigurations: [
+        0:
+
+          name:                                 "ipconfig1"
+          properties.applicationSecurityGroups: [
+            0:
+
+              id: "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/applicationSecurityGroups/asg-azopslab-ssh-swc"
+
+          ]
+          properties.privateIPAllocationMethod: "Dynamic"
+          properties.publicIPAddress.id:        "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/publicIPAddresses/pip-vm-azopslab-app-swc"
+          properties.subnet.id:                 "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/virtualNetworks/vnet-azopslab-swc/subnets/snet-vms"
+
+      ]
+      tags.env:       "lab"
+      tags.expires:   "2026-12-06"
+      tags.keepalive: "false"
+      tags.owner:     "hadi"
+      tags.project:   "azure-ops-lab"
+      type:           "Microsoft.Network/networkInterfaces"
+
+  + Microsoft.Network/networkInterfaces/nic-vm-azopslab-web-swc [2024-05-01]
+
+      apiVersion:     "2024-05-01"
+      id:             "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/networkInterfaces/nic-vm-azopslab-web-swc"
+      location:       "swedencentral"
+      name:           "nic-vm-azopslab-web-swc"
+      properties.ipConfigurations: [
+        0:
+
+          name:                                 "ipconfig1"
+          properties.applicationSecurityGroups: [
+            0:
+
+              id: "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/applicationSecurityGroups/asg-azopslab-ssh-swc"
+
+            1:
+
+              id: "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/applicationSecurityGroups/asg-azopslab-web-swc"
+
+          ]
+          properties.privateIPAllocationMethod: "Dynamic"
+          properties.publicIPAddress.id:        "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/publicIPAddresses/pip-vm-azopslab-web-swc"
+          properties.subnet.id:                 "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/virtualNetworks/vnet-azopslab-swc/subnets/snet-vms"
+
+      ]
+      tags.env:       "lab"
+      tags.expires:   "2026-12-06"
+      tags.keepalive: "false"
+      tags.owner:     "hadi"
+      tags.project:   "azure-ops-lab"
+      type:           "Microsoft.Network/networkInterfaces"
+
+  + Microsoft.Network/networkSecurityGroups/nsg-azopslab-vms-swc [2024-05-01]
+
+      apiVersion:     "2024-05-01"
+      id:             "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/networkSecurityGroups/nsg-azopslab-vms-swc"
+      location:       "swedencentral"
+      name:           "nsg-azopslab-vms-swc"
+      properties.securityRules: [
+        0:
+
+          name:                            "Allow-HTTP-From-Admin"
+          properties.access:               "Allow"
+          properties.destinationApplicationSecurityGroups: [
+            0:
+
+              id: "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/applicationSecurityGroups/asg-azopslab-web-swc"
+
+          ]
+          properties.destinationPortRange: "80"
+          properties.direction:            "Inbound"
+          properties.priority:             110
+          properties.protocol:             "Tcp"
+          properties.sourceAddressPrefix:  "<owner-ip>/32"
+          properties.sourcePortRange:      "*"
+
+        1:
+
+          name:                            "Allow-SSH-From-Admin"
+          properties.access:               "Allow"
+          properties.destinationApplicationSecurityGroups: [
+            0:
+
+              id: "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/applicationSecurityGroups/asg-azopslab-ssh-swc"
+
+          ]
+          properties.destinationPortRange: "22"
+          properties.direction:            "Inbound"
+          properties.priority:             100
+          properties.protocol:             "Tcp"
+          properties.sourceAddressPrefix:  "<owner-ip>/32"
+          properties.sourcePortRange:      "*"
+
+      ]
+      tags.env:       "lab"
+      tags.expires:   "2026-12-06"
+      tags.keepalive: "false"
+      tags.owner:     "hadi"
+      tags.project:   "azure-ops-lab"
+      type:           "Microsoft.Network/networkSecurityGroups"
+
+  + Microsoft.Network/publicIPAddresses/pip-vm-azopslab-app-swc [2024-05-01]
+
+      apiVersion:                          "2024-05-01"
+      id:                                  "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/publicIPAddresses/pip-vm-azopslab-app-swc"
+      location:                            "swedencentral"
+      name:                                "pip-vm-azopslab-app-swc"
+      properties.publicIPAllocationMethod: "Static"
+      sku.name:                            "Standard"
+      tags.env:                            "lab"
+      tags.expires:                        "2026-12-06"
+      tags.keepalive:                      "false"
+      tags.owner:                          "hadi"
+      tags.project:                        "azure-ops-lab"
+      type:                                "Microsoft.Network/publicIPAddresses"
+
+  + Microsoft.Network/publicIPAddresses/pip-vm-azopslab-web-swc [2024-05-01]
+
+      apiVersion:                          "2024-05-01"
+      id:                                  "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/publicIPAddresses/pip-vm-azopslab-web-swc"
+      location:                            "swedencentral"
+      name:                                "pip-vm-azopslab-web-swc"
+      properties.publicIPAllocationMethod: "Static"
+      sku.name:                            "Standard"
+      tags.env:                            "lab"
+      tags.expires:                        "2026-12-06"
+      tags.keepalive:                      "false"
+      tags.owner:                          "hadi"
+      tags.project:                        "azure-ops-lab"
+      type:                                "Microsoft.Network/publicIPAddresses"
+
+  + Microsoft.Network/virtualNetworks/vnet-azopslab-swc [2024-05-01]
+
+      apiVersion:               "2024-05-01"
+      id:                       "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/virtualNetworks/vnet-azopslab-swc"
+      location:                 "swedencentral"
+      name:                     "vnet-azopslab-swc"
+      properties.addressSpace.addressPrefixes: [
+        0: "10.20.0.0/16"
+      ]
+      properties.subnets: [
+        0:
+
+          name:                               "snet-vms"
+          properties.addressPrefix:           "10.20.1.0/24"
+          properties.defaultOutboundAccess:   false
+          properties.networkSecurityGroup.id: "/subscriptions/<subscription-id>/resourceGroups/rg-azopslab-swc/providers/Microsoft.Network/networkSecurityGroups/nsg-azopslab-vms-swc"
+
+      ]
+      tags.env:                 "lab"
+      tags.expires:             "2026-12-06"
+      tags.keepalive:           "false"
+      tags.owner:               "hadi"
+      tags.project:             "azure-ops-lab"
+      type:                     "Microsoft.Network/virtualNetworks"
+
+  * Microsoft.Insights/actiongroups/ag-azopslab-email
+  * Microsoft.ManagedIdentity/userAssignedIdentities/id-azopslab-github
+  * microsoft.insights/activityLogAlerts/ar-azopslab-rbac-change
+
+Resource changes: 10 to create, 3 to ignore.
