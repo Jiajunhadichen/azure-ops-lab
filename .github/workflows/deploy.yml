@@ -1,0 +1,98 @@
+# Preview (what-if) every infra change on PRs; deploy only by hand from main.
+# Logs in with OIDC through the user-assigned identity id-azopslab-github: no stored passwords.
+name: deploy
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ["infra/**", ".github/workflows/deploy.yml"]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "what-if only, or deploy after what-if"
+        type: choice
+        options: [what-if, deploy]
+        default: what-if
+
+permissions:
+  contents: read
+  id-token: write # needed to request the OIDC token for azure/login
+
+concurrency:
+  group: deploy-rg-azopslab-swc
+  cancel-in-progress: false # never cut a running deployment short
+
+env:
+  RESOURCE_GROUP: rg-azopslab-swc
+  BICEP_VERSION: 0.48.1
+
+jobs:
+  what-if:
+    name: What-if
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Azure login (OIDC)
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: What-if against the lab resource group
+        # Azure CLI instead of azure/bicep-deploy: the action reported "no change"
+        # when ARM preflight failed (VM quota 0), while the CLI fails the job.
+        shell: bash # -eo pipefail, so a failed what-if is not hidden by tee
+        env:
+          ADMIN_SOURCE_IP: ${{ secrets.ADMIN_SOURCE_IP }}
+          SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
+        run: |
+          az bicep install --version "v${BICEP_VERSION}"
+          az deployment group what-if \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "whatif-${{ github.run_id }}" \
+            --template-file infra/main.bicep \
+            --parameters adminSourceIp="$ADMIN_SOURCE_IP" sshPublicKey="$SSH_PUBLIC_KEY" \
+                         owner=hadi expires=2026-12-31 \
+            --result-format FullResourcePayloads \
+            | tee whatif.txt
+          {
+            echo '## What-if'
+            echo '```'
+            grep -E '^ *[-+~=*!x] Microsoft\.|Resource changes' whatif.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy
+    needs: what-if
+    # Manual run, from main, with mode=deploy. PRs can never deploy.
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'deploy' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Azure login (OIDC)
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to the lab resource group
+        shell: bash
+        env:
+          ADMIN_SOURCE_IP: ${{ secrets.ADMIN_SOURCE_IP }}
+          SSH_PUBLIC_KEY: ${{ vars.SSH_PUBLIC_KEY }}
+        run: |
+          az bicep install --version "v${BICEP_VERSION}"
+          start=$(date +%s)
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "deploy-${{ github.run_id }}" \
+            --template-file infra/main.bicep \
+            --parameters adminSourceIp="$ADMIN_SOURCE_IP" sshPublicKey="$SSH_PUBLIC_KEY" \
+                         owner=hadi expires=2026-12-31 \
+            --query "properties.provisioningState" -o tsv
+          echo "Deploy duration: $(( $(date +%s) - start )) s" | tee -a "$GITHUB_STEP_SUMMARY"
