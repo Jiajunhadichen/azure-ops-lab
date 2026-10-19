@@ -48,9 +48,14 @@ for type in "${ORDER[@]}"; do
   fi
 done
 
-# Anything else in the group that is not kept.
+# Anything else in the group that is not kept. A dry run deletes nothing, so it also hides the
+# types in ORDER; after --yes, anything still listed failed to delete or is not in ORDER.
 all=$(az resource list -g "$RG" --query "[].[type, name]" -o tsv)
 others=$(printf '%s' "$all" | not_kept)
+if ! $APPLY; then
+  ORDER_RE=$(IFS='|'; echo "${ORDER[*]}")
+  others=$(printf '%s' "$others" | { grep -viE "^(${ORDER_RE})([[:space:]]|$)" || true; })
+fi
 if [[ -n "$others" ]]; then
   echo "Not in the delete order (handle by hand):"
   echo "$others" | sed 's/^/  /'
