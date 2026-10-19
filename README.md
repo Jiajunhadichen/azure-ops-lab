@@ -27,7 +27,7 @@ Numbers stay as `__` until I have measured them myself.
 
 - One resource group in Sweden Central; teardown deletes the whole group.
 - One VNet, one subnet, one NSG. Inbound SSH and HTTP only from my own IP, targeted through application security groups.
-- Two Ubuntu 24.04 VMs (B-series, Standard SSD), key-only SSH, Trusted Launch.
+- Two Ubuntu 24.04 VMs (D2als_v6, Standard SSD), key-only SSH, Trusted Launch. They run only during lab sessions and are deleted afterwards: the low-cost B-series sizes had no quota in Sweden Central.
 - Explicit outbound access: a Standard public IP per VM, or a NAT Gateway behind one parameter ([ADR 0002](docs/adr/0002-vm-outbound-access.md)).
 - Every resource is tagged with owner, env, project, expires and keepalive.
 

@@ -16,9 +16,9 @@ param sshPublicKey string
 @description('Admin user name on both VMs.')
 param adminUsername string = 'azureops'
 
-@description('VM size. Small B-series only, to keep cost low.')
-@allowed(['Standard_B2ats_v2', 'Standard_B1s'])
-param vmSize string = 'Standard_B2ats_v2'
+@description('VM size. Small sizes only. B-series quota is 0 in Sweden Central (support ticket open), so D2als_v6 is the default; run it only during labs.')
+@allowed(['Standard_D2als_v6', 'Standard_B2ts_v2', 'Standard_B2ats_v2', 'Standard_B1s'])
+param vmSize string = 'Standard_D2als_v6'
 
 @description('true: outbound through a NAT Gateway and no public IPs on the VMs (see ADR 0002).')
 param useNatGateway bool = false

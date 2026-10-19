@@ -68,6 +68,8 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         sku: 'server'
         version: 'latest'
       }
+      // v6 sizes only accept NVMe disks; the B-series sizes only accept SCSI.
+      diskControllerType: endsWith(vmSize, '_v6') ? 'NVMe' : 'SCSI'
       osDisk: {
         name: 'osdisk-${name}'
         createOption: 'FromImage'
