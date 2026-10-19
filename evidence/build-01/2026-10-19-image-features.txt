@@ -1,0 +1,6 @@
+# Copied from the owner's terminal, 2026-10-19 ~19:34 UTC.
+az vm image show --urn Canonical:ubuntu-24_04-lts:server:latest -l swedencentral --query "features[?name=='DiskControllerTypes' || name=='SecurityType'].{name:name, value:value}" -o table
+Name                 Value
+-------------------  ----------------------
+SecurityType         TrustedLaunchSupported
+DiskControllerTypes  SCSI, NVMe
