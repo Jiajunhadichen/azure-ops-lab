@@ -1,0 +1,8 @@
+// Failed SSH logins in the last 24 hours. The NSG only admits one IP, so this should stay
+// near zero; anything else is worth a look.
+Syslog
+| where TimeGenerated > ago(24h)
+| where Facility in ("auth", "authpriv")
+| where SyslogMessage has_any ("Failed password", "Invalid user", "authentication failure")
+| summarize Attempts = count(), Last = max(TimeGenerated) by Computer, HostIP
+| order by Attempts desc

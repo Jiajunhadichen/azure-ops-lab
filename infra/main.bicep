@@ -1,5 +1,6 @@
 // Lab environment: one VNet, one subnet, two small Linux VMs (web, app).
-// Deployed into an existing resource group (rg-azopslab-swc). Teardown = delete the resource group.
+// Deployed into an existing resource group (rg-azopslab-swc), after monitoring.bicep (it needs the
+// action group). Teardown: infra/teardown.sh.
 targetScope = 'resourceGroup'
 
 @description('Azure region. The lab is limited to Sweden Central.')
@@ -22,6 +23,9 @@ param vmSize string = 'Standard_D2als_v6'
 
 @description('true: outbound through a NAT Gateway and no public IPs on the VMs (see ADR 0002).')
 param useNatGateway bool = false
+
+@description('true: Log Analytics, the monitoring agent on both VMs, and the heartbeat and CPU alerts.')
+param enableMonitoring bool = true
 
 @description('Tag: who owns these resources.')
 param owner string
@@ -52,6 +56,10 @@ var vms = [
 var subnetId = resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet-${workload}-${regionCode}', 'snet-vms')
 var asgSshId = resourceId('Microsoft.Network/applicationSecurityGroups', 'asg-${workload}-ssh-${regionCode}')
 var asgWebId = resourceId('Microsoft.Network/applicationSecurityGroups', 'asg-${workload}-web-${regionCode}')
+var dcrId = resourceId('Microsoft.Insights/dataCollectionRules', 'dcr-${workload}-vms-${regionCode}')
+var vmIds = [for v in vms: resourceId('Microsoft.Compute/virtualMachines', 'vm-${workload}-${v.purpose}-${regionCode}')]
+// Created by monitoring.bicep, which must be deployed first.
+var actionGroupId = resourceId('Microsoft.Insights/actionGroups', 'ag-${workload}-email')
 
 module network 'modules/network.bicep' = {
   name: 'network'
@@ -65,10 +73,20 @@ module network 'modules/network.bicep' = {
   }
 }
 
+module logs 'modules/vm-logs.bicep' = if (enableMonitoring) {
+  name: 'vm-logs'
+  params: {
+    location: location
+    namePrefix: workload
+    regionCode: regionCode
+    tags: tags
+  }
+}
+
 module vm 'modules/vm.bicep' = [
   for v in vms: {
     name: 'vm-${v.purpose}'
-    dependsOn: [network]
+    dependsOn: [network, logs]
     params: {
       location: location
       name: 'vm-${workload}-${v.purpose}-${regionCode}'
@@ -79,9 +97,23 @@ module vm 'modules/vm.bicep' = [
       adminUsername: adminUsername
       sshPublicKey: sshPublicKey
       tags: tags
+      dcrId: enableMonitoring ? dcrId : ''
     }
   }
 ]
+
+module vmAlerts 'modules/vm-alerts.bicep' = if (enableMonitoring) {
+  name: 'vm-alerts'
+  dependsOn: [vm, logs]
+  params: {
+    location: location
+    namePrefix: workload
+    vmIds: vmIds
+    workspaceId: resourceId('Microsoft.OperationalInsights/workspaces', 'law-${workload}-${regionCode}')
+    actionGroupId: actionGroupId
+    tags: tags
+  }
+}
 
 output vmNames array = [for (v, i) in vms: vm[i].outputs.name]
 output publicIps array = [for (v, i) in vms: vm[i].outputs.publicIp]

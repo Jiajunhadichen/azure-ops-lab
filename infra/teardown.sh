@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Delete every lab resource in the resource group, keep the group, the deploy identity and the
-# free alerting baseline (infra/monitoring.bicep),
+# Delete every lab resource in the resource group, keep the group, the deploy identity, the
+# free alerting baseline (infra/monitoring.bicep) and the Log Analytics workspace and DCR (free
+# while no data comes in),
 # then check the whole subscription for billable leftovers (disks, public IPs, snapshots).
 #
 # Usage: infra/teardown.sh          # dry run: list what would be deleted
@@ -11,7 +12,7 @@ set -euo pipefail
 
 RG="${RG:-rg-azopslab-swc}"
 # Kept on teardown (free). Matched case-insensitively: az returns resource types in mixed case.
-KEEP_RE="microsoft.managedidentity/userassignedidentities|microsoft.insights/actiongroups|microsoft.insights/activitylogalerts"
+KEEP_RE="microsoft.managedidentity/userassignedidentities|microsoft.insights/actiongroups|microsoft.insights/activitylogalerts|microsoft.operationalinsights/workspaces|microsoft.insights/datacollectionrules"
 not_kept() { # stdin: lines starting with a resource type; prints the lines that are not kept
   grep -viE "^(${KEEP_RE})([[:space:]]|$)" || true
 }
@@ -24,9 +25,13 @@ ids_of() { # $1 = resource type
   az resource list -g "$RG" --resource-type "$1" --query "[].id" -o tsv
 }
 
-# Delete in dependency order: VMs first (their OS disks and NICs go with them), then networking.
+# Delete in dependency order: VM alerts first (so the VMs going away does not fire them), then VMs
+# (their OS disks, NICs and extensions go with them), then networking.
 ORDER=(
+  Microsoft.Insights/scheduledQueryRules
+  Microsoft.Insights/metricAlerts
   Microsoft.Compute/virtualMachines
+  Microsoft.Compute/virtualMachines/extensions
   Microsoft.Network/networkInterfaces
   Microsoft.Compute/disks
   Microsoft.Network/publicIPAddresses

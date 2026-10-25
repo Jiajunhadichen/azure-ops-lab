@@ -1,5 +1,6 @@
 // Lab alerting baseline: one email action group and one activity log alert on new role assignments.
-// Deployed on its own into rg-azopslab-swc (no VMs needed). VM alerts will be added here later.
+// Deployed on its own into rg-azopslab-swc (no VMs needed) and kept on teardown. The VM alerts are
+// in modules/vm-alerts.bicep, deployed with the VMs by main.bicep.
 // Replaces the hand-built action group from lab monitor-01 (see issues #15 and #16).
 //
 // Deploy from the repo root (the email stays in your shell, not in git):

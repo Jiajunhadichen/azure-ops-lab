@@ -1,0 +1,6 @@
+// When did each VM last report? A VM silent for more than 5 minutes is what the
+// ar-azopslab-vm-heartbeat-lost alert fires on. Written before the first deploy; check it then.
+Heartbeat
+| summarize LastHeartbeat = max(TimeGenerated) by Computer
+| extend MinutesSilent = datetime_diff('minute', now(), LastHeartbeat)
+| order by MinutesSilent desc
