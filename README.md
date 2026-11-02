@@ -19,8 +19,8 @@ Numbers stay as `__` until I have measured them myself.
 | Stage | What it proves | Status |
 |---|---|---|
 | **Build** | One command creates the network and two Linux VMs from Bicep; one command deletes everything billable. | Deployed and torn down once: 1 min 07 s up, 38 s down, no billable leftovers ([build-01](labs/build-01-first-vm-deploy/)) |
-| **Monitor** | Metrics and logs land in Log Analytics; alerts reach me by email. | First alert, deployed from Bicep: role-assignment change to inbox in 3 to 6 min over three tests ([monitor-01](labs/monitor-01-activity-log-alert/)). VM metrics, logs and alerts written in Bicep, not yet deployed |
-| **Break** | Scripted failure drills (stopped service, blocked port, full disk) with measured detection time. | Planned |
+| **Monitor** | Metrics and logs land in Log Analytics; alerts reach me by email. | First alert, deployed from Bicep: role-assignment change to inbox in 3 to 6 min over three tests ([monitor-01](labs/monitor-01-activity-log-alert/)). VM logs (Log Analytics, Azure Monitor Agent) and a CPU alert deployed from Bicep; heartbeats arrive about 4 min after deploy ([monitor-02](labs/monitor-02-vm-metrics-and-alerts/)) |
+| **Break** | Scripted failure drills (stopped service, blocked port, full disk) with measured detection time. | First drill: CPU saturation to alert email in about 8 min (n = 1, [monitor-02](labs/monitor-02-vm-metrics-and-alerts/)). Heartbeat-loss drill not measured yet |
 | **Recover** | Runbooks and backup restores, timed, with a short postmortem for each drill. | Planned |
 
 ## Design at a glance
