@@ -1,5 +1,5 @@
-// One Ubuntu 24.04 VM with key-only SSH, Trusted Launch, a Standard SSD OS disk
-// and (optionally) its own Standard public IP.
+// One Ubuntu 24.04 VM with key-only SSH, Trusted Launch, a Standard SSD OS disk,
+// (optionally) its own Standard public IP and (optionally) the Azure Monitor Agent.
 
 param location string
 param name string
@@ -11,6 +11,8 @@ param adminUsername string
 @secure()
 param sshPublicKey string
 param tags object
+@description('Data collection rule for the Azure Monitor Agent. Empty: no agent.')
+param dcrId string = ''
 
 resource pip 'Microsoft.Network/publicIPAddresses@2024-05-01' = if (withPublicIp) {
   name: 'pip-${name}'
@@ -43,6 +45,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: name
   location: location
   tags: tags
+  identity: { type: 'SystemAssigned' } // the monitoring agent signs in with it
   properties: {
     hardwareProfile: { vmSize: vmSize }
     securityProfile: {
@@ -85,6 +88,27 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: { enabled: true } // managed storage, used for serial console
     }
   }
+}
+
+// The agent sends the data that the rule describes to Log Analytics.
+resource ama 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = if (!empty(dcrId)) {
+  parent: vm
+  name: 'AzureMonitorLinuxAgent'
+  location: location
+  tags: tags
+  properties: {
+    publisher: 'Microsoft.Azure.Monitor'
+    type: 'AzureMonitorLinuxAgent'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+  }
+}
+
+resource dcrAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2023-03-11' = if (!empty(dcrId)) {
+  name: 'dcra-${name}'
+  scope: vm
+  properties: { dataCollectionRuleId: dcrId }
 }
 
 output name string = vm.name

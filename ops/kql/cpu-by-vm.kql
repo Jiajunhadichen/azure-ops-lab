@@ -1,0 +1,7 @@
+// Average and peak CPU per VM in 5-minute bins over the last hour (from the agent's Perf data).
+// The CPU alert uses the platform metric "Percentage CPU" instead; both should roughly agree.
+Perf
+| where TimeGenerated > ago(1h)
+| where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+| summarize AvgCpu = round(avg(CounterValue), 1), MaxCpu = round(max(CounterValue), 1) by Computer, bin(TimeGenerated, 5m)
+| order by TimeGenerated desc
