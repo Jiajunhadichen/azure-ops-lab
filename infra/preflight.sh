@@ -22,7 +22,8 @@ read -r restricted family vcpus controllers tl_off < <(az vm list-skus -l "$REGI
   --query "[?name=='$SIZE'] | [0].[length(restrictions), family,
            capabilities[?name=='vCPUs'].value | [0],
            capabilities[?name=='DiskControllerTypes'].value | [0] || 'SCSI',
-           capabilities[?name=='TrustedLaunchDisabled'].value | [0] || 'False']" -o tsv | tr -d ' ')
+           capabilities[?name=='TrustedLaunchDisabled'].value | [0] || 'False']" -o tsv \
+  | tr -d ' ' | paste -sd ' ' -) # tsv prints one list item per line; read needs one line
 if [[ -z "${family:-}" ]]; then echo "FAIL: $SIZE is not offered in $REGION"; exit 1; fi
 echo "family=$family vcpus=$vcpus disk_controllers=$controllers trusted_launch_disabled=$tl_off"
 if [[ "$restricted" != "0" ]]; then echo "FAIL: $SIZE is restricted in $REGION (SkuNotAvailable)"; ok=false; fi
@@ -31,7 +32,7 @@ if [[ "$restricted" != "0" ]]; then echo "FAIL: $SIZE is restricted in $REGION (
 need=$(( vcpus * COUNT ))
 for name in "$family" cores; do
   read -r used limit < <(az vm list-usage -l "$REGION" \
-    --query "[?name.value=='$name'] | [0].[currentValue, limit]" -o tsv)
+    --query "[?name.value=='$name'] | [0].[currentValue, limit]" -o tsv | paste -sd ' ' -)
   free=$(( ${limit:-0} - ${used:-0} ))
   echo "quota $name: used=${used:-0} limit=${limit:-0} free=$free need=$need"
   if (( free < need )); then echo "FAIL: not enough $name quota"; ok=false; fi
