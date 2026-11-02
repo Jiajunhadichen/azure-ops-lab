@@ -31,6 +31,7 @@ Numbers stay as `__` until I have measured them myself.
 - Explicit outbound access: a Standard public IP per VM, or a NAT Gateway behind one parameter ([ADR 0002](docs/adr/0002-vm-outbound-access.md)).
 - Monitoring: the Azure Monitor Agent sends heartbeat, CPU, memory, disk and syslog data to Log Analytics; alerts for a lost heartbeat and high CPU go to the same email action group (written, first deploy pending).
 - Every resource is tagged with owner, env, project, expires and keepalive.
+- Azure Policy on the group denies anything outside Sweden Central and any VM size outside a short allowlist ([governance-01](labs/governance-01-policy-guardrails/)).
 
 ## How changes are made
 
