@@ -29,7 +29,7 @@ Numbers stay as `__` until I have measured them myself.
 - One VNet, one subnet, one NSG. Inbound SSH and HTTP only from my own IP, targeted through application security groups.
 - Two Ubuntu 24.04 VMs (D2als_v6, Standard SSD), key-only SSH, Trusted Launch. They run only during lab sessions and are deleted afterwards: the low-cost B-series sizes had no quota in Sweden Central.
 - Explicit outbound access: a Standard public IP per VM, or a NAT Gateway behind one parameter ([ADR 0002](docs/adr/0002-vm-outbound-access.md)).
-- Monitoring: the Azure Monitor Agent sends heartbeat, CPU, memory, disk and syslog data to Log Analytics; alerts for a lost heartbeat and high CPU go to the same email action group (written, first deploy pending).
+- Monitoring: the Azure Monitor Agent sends heartbeat, CPU, memory, disk and syslog data to Log Analytics; alerts for a lost heartbeat and high CPU go to the same email action group (first deployed 2026-11-02; the heartbeat alert is not tested yet).
 - Every resource is tagged with owner, env, project, expires and keepalive.
 - Azure Policy on the group denies anything outside Sweden Central and any VM size outside a short allowlist ([governance-01](labs/governance-01-policy-guardrails/)).
 
@@ -47,7 +47,7 @@ Numbers stay as `__` until I have measured them myself.
 |---|---|
 | [`infra/`](infra/) | Bicep templates (`main.bicep`, `monitoring.bicep`, modules, parameters) |
 | [`ops/`](ops/) | Postmortems and KQL queries; runbooks to come (alert rules live in `infra/`) |
-| [`drills/`](drills/) | Failure drill scripts, raw data and analysis (empty until the first drill) |
+| [`drills/`](drills/) | Failure drill scripts, raw data and analysis (empty so far; the first drill is recorded in [monitor-02](labs/monitor-02-vm-metrics-and-alerts/)) |
 | [`evidence/`](evidence/) | Redacted output and screenshots from real runs |
 | [`labs/`](labs/) | AZ-104 practice notes, one folder per lab |
 | [`docs/adr/`](docs/adr/) | Architecture decision records |
