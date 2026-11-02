@@ -17,12 +17,14 @@ ok=true
 echo "== $SIZE x $COUNT in $REGION"
 
 # 1. Size: restrictions, family, vCPUs, disk controllers, Trusted Launch.
+# Queries return a list of rows ([?...].[...]): with -o tsv a flat list prints one value per
+# line, and read would only get the first one (lab-finding, 2026-11-02).
 read -r restricted family vcpus controllers tl_off < <(az vm list-skus -l "$REGION" \
   --resource-type virtualMachines --size "$SIZE" \
-  --query "[?name=='$SIZE'] | [0].[length(restrictions), family,
+  --query "[?name=='$SIZE'].[length(restrictions), family,
            capabilities[?name=='vCPUs'].value | [0],
            capabilities[?name=='DiskControllerTypes'].value | [0] || 'SCSI',
-           capabilities[?name=='TrustedLaunchDisabled'].value | [0] || 'False']" -o tsv | tr -d ' ')
+           capabilities[?name=='TrustedLaunchDisabled'].value | [0] || 'False']" -o tsv | head -n 1 | tr -d ' ')
 if [[ -z "${family:-}" ]]; then echo "FAIL: $SIZE is not offered in $REGION"; exit 1; fi
 echo "family=$family vcpus=$vcpus disk_controllers=$controllers trusted_launch_disabled=$tl_off"
 if [[ "$restricted" != "0" ]]; then echo "FAIL: $SIZE is restricted in $REGION (SkuNotAvailable)"; ok=false; fi
@@ -31,7 +33,7 @@ if [[ "$restricted" != "0" ]]; then echo "FAIL: $SIZE is restricted in $REGION (
 need=$(( vcpus * COUNT ))
 for name in "$family" cores; do
   read -r used limit < <(az vm list-usage -l "$REGION" \
-    --query "[?name.value=='$name'] | [0].[currentValue, limit]" -o tsv)
+    --query "[?name.value=='$name'].[currentValue, limit]" -o tsv | head -n 1)
   free=$(( ${limit:-0} - ${used:-0} ))
   echo "quota $name: used=${used:-0} limit=${limit:-0} free=$free need=$need"
   if (( free < need )); then echo "FAIL: not enough $name quota"; ok=false; fi
